@@ -465,6 +465,23 @@
     .card {
       overflow: hidden;
       transition: transform 170ms ease, box-shadow 170ms ease, border-color 170ms ease;
+      position: relative;
+    }
+
+    .entry-number {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      min-width: 42px;
+      padding: 6px 10px;
+      border-radius: 0.625rem;
+      background: var(--cp-panel-strong);
+      border: 1px solid var(--cp-border);
+      color: var(--cp-accent);
+      font-weight: 800;
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+      text-align: center;
     }
 
     .card.focused {
@@ -716,6 +733,120 @@
       background: var(--cp-accent-soft);
     }
 
+    .presentation-modal {
+      width: min(1500px, 98vw);
+      height: min(94vh, 980px);
+      overflow: auto;
+      display: grid;
+      gap: 18px;
+      padding: 22px;
+      background: var(--cp-bg);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+    }
+
+    .presentation-header {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .presentation-header h2 {
+      font-size: clamp(2rem, 4vw, 4rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr 1.16fr 1fr;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .podium-card {
+      min-height: 440px;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      background: var(--cp-surface);
+    }
+
+    .podium-card.place-1 {
+      min-height: 520px;
+      border-color: var(--cp-accent);
+      box-shadow: var(--cp-shadow);
+    }
+
+    .podium-rank {
+      display: inline-grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-size: 1.25rem;
+      font-weight: 900;
+    }
+
+    .podium-card img,
+    .top-five-image {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+      display: block;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      cursor: zoom-in;
+      padding: 6px;
+    }
+
+    .podium-card.place-1 img {
+      aspect-ratio: 16 / 11;
+    }
+
+    .presentation-image-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 220px;
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+
+    .podium-name {
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+
+    .top-five {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .top-five-card {
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+      background: var(--cp-surface);
+    }
+
+    .top-five-card .top-five-image {
+      min-height: 210px;
+    }
+
+    .winner-empty {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
     .field {
       display: grid;
       gap: 6px;
@@ -849,6 +980,7 @@
 
     <div class="actions">
       <button class="button primary" id="judgeBtn">Run judging</button>
+      <button class="button primary" id="presentationBtn">Presentation view</button>
       <button class="button" id="exportBtn">Export CSV</button>
       <button class="button" id="exportWorkspaceBtn">Export workspace</button>
       <button class="button" id="importWorkspaceBtn">Import workspace</button>
@@ -889,6 +1021,24 @@
   </main>
 
   <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="presentationModal">
+    <section class="presentation-modal" role="dialog" aria-modal="true" aria-label="Presentation leaderboard">
+      <header class="presentation-header">
+        <div>
+          <p class="eyebrow">Promptathon results</p>
+          <h2>Leaderboard</h2>
+          <p class="muted">Winner and top 5 submissions, ready to present.</p>
+        </div>
+        <button class="button primary" id="closePresentationBtn">Back to judging</button>
+      </header>
+      <div id="podium" class="podium"></div>
+      <section>
+        <h2>Top 5</h2>
+        <div id="topFive" class="top-five"></div>
+      </section>
+    </section>
+  </div>
 
   <div class="modal-backdrop" id="reviewModal">
     <section class="review-modal" role="dialog" aria-modal="true" aria-label="Review entry">
@@ -961,6 +1111,7 @@
       fileInput: document.getElementById("fileInput"),
       dropZone: document.getElementById("dropZone"),
       judgeBtn: document.getElementById("judgeBtn"),
+      presentationBtn: document.getElementById("presentationBtn"),
       exportBtn: document.getElementById("exportBtn"),
       exportWorkspaceBtn: document.getElementById("exportWorkspaceBtn"),
       importWorkspaceBtn: document.getElementById("importWorkspaceBtn"),
@@ -980,6 +1131,10 @@
       timerRemaining: document.getElementById("timerRemaining"),
       timerFinish: document.getElementById("timerFinish"),
       toast: document.getElementById("toast"),
+      presentationModal: document.getElementById("presentationModal"),
+      podium: document.getElementById("podium"),
+      topFive: document.getElementById("topFive"),
+      closePresentationBtn: document.getElementById("closePresentationBtn"),
       reviewModal: document.getElementById("reviewModal"),
       reviewImage: document.getElementById("reviewImage"),
       reviewName: document.getElementById("reviewName"),
@@ -1622,6 +1777,7 @@
         card.className = "card panel";
         card.dataset.cardId = entry.id;
         card.innerHTML = `
+          <div class="entry-number">#${index + 1}</div>
           <button class="image-button" data-open="${entry.id}" title="Open and review image">
             <img src="${entry.imageData}" alt="${escapeHtml(entry.user)}" />
           </button>
@@ -1629,7 +1785,7 @@
             <div class="topline">
               <div>
                 <h3>${escapeHtml(entry.user)}</h3>
-                <p class="muted small">${statusLabel(entry)} · ${escapeHtml(entry.submittedAt || "time not captured")} · ${escapeHtml(entry.fileName)}</p>
+                <p class="muted small">Entry #${index + 1} · ${statusLabel(entry)} · ${escapeHtml(entry.submittedAt || "time not captured")} · ${escapeHtml(entry.fileName)}</p>
               </div>
               <div class="score">${entry.disqualified ? "DQ" : score(entry)}</div>
             </div>
@@ -1698,6 +1854,79 @@
     function checkedLabels(entry) {
       if (entry.disqualified) return [`Disqualified: ${entry.disqualifiedReasons.join(", ")}`];
       return criteria.filter((item) => entry.checks[item.id]).map((item) => item.label);
+    }
+
+    function rankedEntries() {
+      return [...state.entries].sort((a, b) =>
+        Number(a.disqualified) - Number(b.disqualified)
+        || score(b) - score(a)
+        || state.entries.indexOf(a) - state.entries.indexOf(b)
+      );
+    }
+
+    function openPresentationView() {
+      renderPresentationView();
+      el.presentationModal.classList.add("open");
+      rankedEntries().slice(0, 5).forEach((entry) => {
+        ensureGeneratedPreview(entry).then(() => {
+          if (el.presentationModal.classList.contains("open")) renderPresentationView();
+        });
+      });
+    }
+
+    function closePresentationView() {
+      el.presentationModal.classList.remove("open");
+    }
+
+    function renderPresentationView() {
+      const top = rankedEntries().filter((entry) => !entry.disqualified).slice(0, 5);
+      if (!top.length) {
+        el.podium.innerHTML = `<div class="winner-empty panel"><div><h2>No results yet</h2><p class="muted">Run judging or manually score submissions first.</p></div></div>`;
+        el.topFive.innerHTML = "";
+        return;
+      }
+
+      const podiumOrder = [top[1], top[0], top[2]].filter(Boolean);
+      el.podium.innerHTML = podiumOrder.map((entry) => podiumCard(entry, top.indexOf(entry) + 1)).join("");
+      el.topFive.innerHTML = top.map((entry, index) => topFiveCard(entry, index + 1)).join("");
+    }
+
+    function podiumCard(entry, rank) {
+      const entryNumber = state.entries.indexOf(entry) + 1;
+      const imageSrc = entry.generatedImageData || entry.imageData;
+      return `
+        <article class="podium-card panel place-${rank}">
+          <span class="podium-rank">#${rank}</span>
+          <div class="presentation-image-wrap">
+            <img src="${imageSrc}" alt="${escapeHtml(entry.user)} submission" data-open="${entry.id}" />
+          </div>
+          <div>
+            <h3 class="podium-name">${escapeHtml(entry.user)}</h3>
+            <p class="muted small">Entry #${entryNumber} · ${escapeHtml(entry.submittedAt || "time not captured")}</p>
+          </div>
+          <strong>${score(entry)} / 13 points</strong>
+          <p class="muted small">${escapeHtml(checkedLabels(entry).join(", ") || "No criteria selected")}</p>
+        </article>
+      `;
+    }
+
+    function topFiveCard(entry, rank) {
+      const entryNumber = state.entries.indexOf(entry) + 1;
+      const imageSrc = entry.generatedImageData || entry.imageData;
+      return `
+        <article class="top-five-card panel">
+          <div class="presentation-image-wrap">
+            <img class="top-five-image" src="${imageSrc}" alt="${escapeHtml(entry.user)} submission" data-open="${entry.id}" />
+          </div>
+          <div class="topline">
+            <div>
+              <strong>#${rank} ${escapeHtml(entry.user)}</strong>
+              <p class="muted small">Entry #${entryNumber} · ${escapeHtml(entry.submittedAt || "time not captured")}</p>
+            </div>
+            <div class="score">${score(entry)}</div>
+          </div>
+        </article>
+      `;
     }
 
     function renderBatchTimer() {
@@ -1896,6 +2125,7 @@
     });
     document.addEventListener("paste", addClipboardImages);
     el.judgeBtn.addEventListener("click", judgeAll);
+    el.presentationBtn.addEventListener("click", openPresentationView);
     el.exportBtn.addEventListener("click", exportCsv);
     el.exportWorkspaceBtn.addEventListener("click", exportWorkspace);
     el.importWorkspaceBtn.addEventListener("click", () => el.workspaceInput.click());
@@ -1986,10 +2216,21 @@
       scheduleEntrySave(entry, { submittedAt: entry.submittedAt });
     });
     el.closeReviewBtn.addEventListener("click", closeReview);
+    el.closePresentationBtn.addEventListener("click", closePresentationView);
+    el.presentationModal.addEventListener("click", (event) => {
+      const opener = event.target.closest("[data-open]");
+      if (!opener) return;
+      closePresentationView();
+      openReview(opener.dataset.open);
+    });
+    el.presentationModal.addEventListener("click", (event) => {
+      if (event.target === el.presentationModal) closePresentationView();
+    });
     el.reviewModal.addEventListener("click", (event) => {
       if (event.target === el.reviewModal) closeReview();
     });
     document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closePresentationView();
       if (event.key === "Escape") closeReview();
     });
 
