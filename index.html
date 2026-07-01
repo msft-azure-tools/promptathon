@@ -1,0 +1,1981 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Promptathon Judge</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='currentColor' opacity='.08'/%3E%3Crect x='12' y='12' width='18' height='18' fill='currentColor'/%3E%3Crect x='34' y='12' width='18' height='18' fill='currentColor' opacity='.72'/%3E%3Crect x='12' y='34' width='18' height='18' fill='currentColor' opacity='.54'/%3E%3Crect x='34' y='34' width='18' height='18' fill='currentColor' opacity='.36'/%3E%3C/svg%3E" />
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 12% -8%, var(--cp-highlight), transparent 34%),
+        radial-gradient(circle at 86% 0%, var(--cp-accent-soft), transparent 28%),
+        linear-gradient(180deg, var(--cp-bg-elevated), var(--cp-bg));
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    button, input, textarea {
+      font: inherit;
+    }
+
+    .page {
+      width: min(1320px, 100%);
+      margin: 0 auto;
+      padding: 22px 28px 32px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin: -22px -28px 24px;
+      padding: 12px 28px;
+      background: var(--cp-panel-strong);
+      border-bottom: 1px solid var(--cp-border);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      padding: 6px;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .ms-logo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .ms-logo span {
+      display: block;
+      border-radius: 1px;
+    }
+
+    .ms-logo span:nth-child(1) { background: var(--cp-danger); }
+    .ms-logo span:nth-child(2) { background: var(--cp-success); }
+    .ms-logo span:nth-child(3) { background: var(--cp-link); }
+    .ms-logo span:nth-child(4) { background: var(--cp-warning); }
+
+    .brand-title {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+    }
+
+    .brand-title strong {
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+    }
+
+    .brand-title span {
+      color: var(--cp-text-muted);
+      font-size: 0.78rem;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .command-label {
+      padding: 6px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+      color: var(--cp-text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 250px;
+      gap: 20px;
+      align-items: stretch;
+      margin-bottom: 18px;
+      padding: 22px;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 0% 0%, var(--cp-highlight), transparent 34%),
+        radial-gradient(circle at 76% 18%, var(--cp-accent-soft), transparent 28%);
+      pointer-events: none;
+    }
+
+    .hero > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .product-lockup {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: var(--cp-text-muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .product-lockup .mini-logo {
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      border: 0;
+      box-shadow: none;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      margin-bottom: 12px;
+      padding: 5px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 999px;
+      background: var(--cp-panel);
+      color: var(--cp-accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--cp-accent);
+    }
+
+    .reference {
+      overflow: hidden;
+      padding: 8px;
+      background: var(--cp-panel-strong);
+      position: relative;
+    }
+
+    .reference img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 0.625rem;
+      display: block;
+      border: 1px solid var(--cp-border);
+    }
+
+    .reference p {
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .notice {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--cp-accent);
+      background: var(--cp-panel-strong);
+    }
+
+    .process {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .process-step {
+      padding: 14px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .step-number {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 0.625rem;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .created-by {
+      margin-top: 10px;
+      color: var(--cp-text-muted);
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    h1 {
+      max-width: 760px;
+      font-size: clamp(2rem, 4vw, 3.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      margin-bottom: 12px;
+    }
+
+    .muted { color: var(--cp-text-muted); }
+    .small { font-size: 0.86rem; }
+
+    .button {
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      padding: 10px 14px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+    }
+
+    .button:hover {
+      border-color: var(--cp-border-strong);
+      transform: translateY(-1px);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .button.primary {
+      background: var(--cp-accent);
+      border-color: transparent;
+      color: var(--cp-accent-fg);
+      font-weight: 700;
+    }
+
+    .button.primary:hover {
+      background: var(--cp-accent-hover);
+      border-color: transparent;
+    }
+
+    .button.danger {
+      color: var(--cp-danger);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+    }
+
+    .panel {
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .drop {
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      gap: 10px;
+      padding: 28px;
+      text-align: center;
+      border: 1px dashed var(--cp-accent);
+      background:
+        linear-gradient(180deg, var(--cp-panel), var(--cp-surface)),
+        var(--cp-accent-soft);
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    }
+
+    .drop.dragover {
+      border-color: var(--cp-accent-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--cp-shadow);
+    }
+
+    .drop strong {
+      display: block;
+      font-size: 1.25rem;
+      margin-bottom: 4px;
+    }
+
+    .plus {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      border: 0;
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .batch-timer {
+      display: none;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 14px;
+    }
+
+    .batch-timer.active {
+      display: grid;
+    }
+
+    .batch-timer strong {
+      display: block;
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 14px;
+      background:
+        linear-gradient(180deg, var(--cp-panel-strong), var(--cp-surface));
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.75rem;
+      line-height: 1.1;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      overflow: hidden;
+      transition: transform 170ms ease, box-shadow 170ms ease, border-color 170ms ease;
+    }
+
+    .card.focused {
+      border-color: var(--cp-accent);
+      box-shadow: var(--cp-shadow);
+      transform: translateY(-3px);
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--cp-accent);
+      box-shadow: var(--cp-shadow);
+    }
+
+    .image-button {
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: zoom-in;
+      display: block;
+    }
+
+    .card img {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      object-fit: cover;
+      display: block;
+      background: var(--cp-surface-soft);
+      border-bottom: 1px solid var(--cp-border);
+    }
+
+    .card-body {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .score {
+      min-width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 800;
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .prompt {
+      max-height: 90px;
+      overflow: auto;
+      padding: 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface-soft);
+    }
+
+    .prompt::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .prompt::-webkit-scrollbar-thumb {
+      background: var(--cp-border-strong);
+      border-radius: 999px;
+    }
+
+    .checks {
+      display: grid;
+      gap: 7px;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      color: var(--cp-text-muted);
+      font-size: 0.88rem;
+    }
+
+    .check input {
+      width: auto;
+      accent-color: var(--cp-accent);
+    }
+
+    .leaderboard {
+      position: sticky;
+      top: 18px;
+      padding: 16px;
+      background:
+        linear-gradient(180deg, var(--cp-panel-strong), var(--cp-surface));
+    }
+
+    .leaderboard h2 {
+      margin-bottom: 12px;
+    }
+
+    .leader-row {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--cp-border);
+      cursor: pointer;
+      border-radius: 0.625rem;
+      transition: background 160ms ease, transform 160ms ease;
+    }
+
+    .leader-row:hover,
+    .leader-row:focus-visible {
+      background: var(--cp-accent-soft);
+      transform: translateX(2px);
+      outline: none;
+    }
+
+    .leader-row:last-child {
+      border-bottom: 0;
+    }
+
+    .rank {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--cp-accent-soft);
+      color: var(--cp-accent);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .leader-row:first-child .rank {
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      box-shadow: 0 0 2px var(--cp-border), 0 1px 2px var(--cp-border);
+    }
+
+    .empty {
+      min-height: 280px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 28px;
+      border: 1px dashed var(--cp-border-strong);
+      border-radius: 16px;
+      background: var(--cp-surface);
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      max-width: 420px;
+      padding: 12px 14px;
+      background: var(--cp-panel-strong);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+      transform: translateY(140%);
+      transition: transform 180ms ease;
+      z-index: 10;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: var(--cp-overlay);
+      backdrop-filter: blur(10px);
+      z-index: 20;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .review-modal {
+      width: min(1500px, 98vw);
+      height: min(94vh, 980px);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 16px;
+      padding: 16px;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: var(--cp-shadow);
+    }
+
+    .review-image-wrap {
+      min-height: 0;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--cp-border);
+      background: var(--cp-surface-soft);
+      display: grid;
+      place-items: center;
+    }
+
+    .review-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .review-side {
+      min-height: 0;
+      overflow: auto;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .review-score {
+      display: inline-grid;
+      place-items: center;
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+
+    .review-note {
+      padding: 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-accent-soft);
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--cp-text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--cp-border);
+      border-radius: 0.625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+    }
+
+    .field input:focus {
+      outline: 2px solid var(--cp-accent-soft);
+      border-color: var(--cp-accent);
+    }
+
+    .preview-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .preview-tabs .button {
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .preview-tabs .button.active {
+      background: var(--cp-accent);
+      border-color: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 700;
+    }
+
+    .file-input { display: none; }
+
+    @media (max-width: 980px) {
+      .hero, .layout, .review-modal, .process {
+        grid-template-columns: 1fr;
+      }
+
+      .leaderboard {
+        position: static;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page { padding: 18px; }
+      .topbar { margin: -18px -18px 18px; padding: 10px 18px; }
+      .stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <nav class="topbar" aria-label="App navigation">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <span class="ms-logo"><span></span><span></span><span></span><span></span></span>
+        </div>
+        <div class="brand-title">
+          <strong>Promptathon Judge</strong>
+          <span>AI-assisted image scoring workspace</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="command-label">Microsoft 365</span>
+        <button class="button" id="themeBtn">Toggle theme</button>
+      </div>
+    </nav>
+
+    <section class="hero">
+      <div>
+        <div class="product-lockup">
+          <span class="brand-mark mini-logo" aria-hidden="true">
+            <span class="ms-logo"><span></span><span></span><span></span><span></span></span>
+          </span>
+          Microsoft 365 Promptathon workspace
+        </div>
+        <span class="eyebrow">Powered by GPT-5.4-mini computer vision</span>
+        <h1>Promptathon Judge</h1>
+        <p class="muted">A streamlined judging workspace for reviewing promptathon submissions from Microsoft Teams. Each screenshot is checked for participant name, prompt rule compliance, and visual scoring against the 13-point rubric.</p>
+        <p class="created-by">Created with Microsoft Scout · Model: GPT-5.4-mini</p>
+      </div>
+      <div class="reference panel">
+        <img src="agent-reference-images/domaragent-reference-paris-frontier.png" alt="Reference image" />
+        <p class="muted small">Reference scene</p>
+      </div>
+    </section>
+
+    <section class="process" aria-label="Judging process">
+      <div class="process-step panel">
+        <span class="step-number">1</span>
+        <strong>Insert screenshots</strong>
+        <p class="muted small">Paste or upload Teams submissions with participant name, prompt, and generated image.</p>
+      </div>
+      <div class="process-step panel">
+        <span class="step-number">2</span>
+        <strong>Analyze with GPT-5.4-mini</strong>
+        <p class="muted small">Computer vision reviews the generated image from the screenshot and checks prompt rule compliance.</p>
+      </div>
+      <div class="process-step panel">
+        <span class="step-number">3</span>
+        <strong>Review final results</strong>
+        <p class="muted small">Judges can verify, adjust scores, and present the shared leaderboard in real time.</p>
+      </div>
+    </section>
+
+    <section class="notice panel">
+      <strong>Judging rule</strong>
+      <p class="muted small">Scores are based on visual details in the generated image shown in the screenshot. The prompt is used only to check forbidden words such as IKEA, Paris, and Eiffel/Eiffel Tower.</p>
+    </section>
+
+    <label class="drop panel" id="dropZone">
+      <input class="file-input" id="fileInput" type="file" accept="image/*" multiple />
+      <span class="plus">+</span>
+      <span>
+        <strong>Insert screenshots here</strong>
+        <span class="muted">Press Ctrl+V, drag images in, or click to choose files.</span>
+      </span>
+    </label>
+
+    <div class="actions">
+      <button class="button primary" id="judgeBtn">Run judging</button>
+      <button class="button" id="exportBtn">Export CSV</button>
+      <button class="button" id="exportWorkspaceBtn">Export workspace</button>
+      <button class="button" id="importWorkspaceBtn">Import workspace</button>
+      <button class="button danger" id="clearBtn">Clear</button>
+      <input id="workspaceInput" type="file" accept="application/json,.json" hidden />
+    </div>
+
+    <section class="batch-timer panel" id="batchTimer">
+      <div><strong id="timerProgress">0/0</strong><span class="muted small">judged in this run</span></div>
+      <div><strong id="timerElapsed">00:00</strong><span class="muted small">elapsed</span></div>
+      <div><strong id="timerRemaining">--:--</strong><span class="muted small">estimated remaining</span></div>
+      <div><strong id="timerFinish">--:--</strong><span class="muted small">estimated finish time</span></div>
+    </section>
+
+    <section class="stats">
+      <div class="stat panel"><strong id="countStat">0</strong><span class="muted small">entries</span></div>
+      <div class="stat panel"><strong id="judgedStat">0</strong><span class="muted small">judged</span></div>
+      <div class="stat panel"><strong id="avgStat">0</strong><span class="muted small">average score</span></div>
+      <div class="stat panel"><strong id="topStat">-</strong><span class="muted small">current leader</span></div>
+    </section>
+
+    <section class="layout">
+      <div>
+        <div class="cards" id="cards"></div>
+        <div class="empty" id="empty">
+          <div>
+            <h2>No screenshots yet</h2>
+            <p class="muted">Paste or upload submissions to begin judging.</p>
+          </div>
+        </div>
+      </div>
+
+      <aside class="leaderboard panel">
+        <h2>Leaderboard</h2>
+        <div id="leaderboard"></div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="modal-backdrop" id="reviewModal">
+    <section class="review-modal" role="dialog" aria-modal="true" aria-label="Review entry">
+      <div class="review-image-wrap">
+        <img id="reviewImage" alt="Enlarged entry screenshot" />
+      </div>
+      <aside class="review-side">
+        <div class="topline">
+          <div>
+            <h2 id="reviewName">Entry</h2>
+            <p class="muted small" id="reviewMeta"></p>
+          </div>
+          <div class="review-score" id="reviewScore">0</div>
+        </div>
+        <p class="review-note small">
+          Review the generated image from the screenshot and the prompt rule result. Tick or untick criteria manually if needed; the leaderboard updates instantly.
+        </p>
+        <div class="preview-tabs" aria-label="Preview mode">
+          <button class="button active" id="fullScreenshotBtn" type="button">Full screenshot</button>
+          <button class="button" id="generatedPreviewBtn" type="button">Image focus</button>
+        </div>
+        <div class="field">
+          <label for="reviewNameInput">Participant name</label>
+          <input id="reviewNameInput" type="text" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="reviewTimeInput">Submission time</label>
+          <input id="reviewTimeInput" type="text" autocomplete="off" placeholder="e.g. 12:42" />
+        </div>
+        <div class="prompt small" id="reviewPrompt"></div>
+        <div class="checks" id="reviewChecks"></div>
+        <button class="button primary" id="closeReviewBtn">Done</button>
+      </aside>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script>
+    const criteria = [
+      { id: "frontier", label: "Frontier Street", words: ["frontier street", "frontier"] },
+      { id: "paris", label: "Eiffel Tower", words: ["paris", "eiffel", "eifell", "effiel", "capital in france", "capital of france", "main capital in france", "french capital", "large scenic tower", "scenic tower", "tower in france", "famous tower"] },
+      { id: "ikea", label: "IKEA truck", words: ["ikea", "blue and yellow", "blue/yellow", "swedish company", "svensk", "delivery truck", "lastbil", "truck", "lorry"] },
+      { id: "fifa", label: "FIFA World Cup sign", words: ["fifa", "world cup", "coupe du monde", "vm", "world cup signs", "signs in french"] },
+      { id: "sportscar", label: "Sports car", words: ["sports car", "sportscar", "sport car", "sport-car", "sportbil", "supercar", "super car", "lamborghini", "race car", "racing car", "blue car", "car"] },
+      { id: "microsoft", label: "Microsoft logo bag", words: ["microsoft"] },
+      { id: "mbappe", label: "Player number 10", words: ["mbappe", "mbapp", "10"] },
+      { id: "autumn", label: "Autumn setting", words: ["autumn", "höst", "host", "fall weather", "autumn weather", "seasonal weather"] },
+      { id: "bench-couple", label: "Couple on a bench", words: ["couple on a bench", "couple sitting on a bench", "pair on a bench", "two people on a bench", "bench couple", "par pa banken", "par på bänken", "sitter pa banken", "sitter på bänken"] },
+      { id: "red-shoes", label: "Red shoes on the photographer", words: ["red shoes", "röda skor", "roda skor", "red footwear", "woman taking photo of the tower", "girl taking photo of the tower", "kvinna som tar bild på tornet", "tjejen som tar bild på tornet"] },
+      { id: "monster-boat", label: "Monster-branded speedboat", words: ["monster branded boat", "monster branded motorboat", "monster boat", "monster motorboat", "monster motorbåt", "monster motorbat", "monster speedboat", "monster powerboat"] },
+      { id: "airplane", label: "Airplane", words: ["airplane", "aeroplane", "plane", "aircraft", "flygplan"] },
+      { id: "french-flag", label: "French flag on the tower", words: ["french flag", "flag on the eiffel tower", "flag on top", "franska flaggan", "flagga på eiffeltornet", "flagga pa eiffeltornet", "tricolore"] }
+    ];
+
+    const disqualifyingPromptTerms = [
+      { label: "IKEA", words: ["ikea"] },
+      { label: "Paris", words: ["paris"] },
+      { label: "Eiffel Tower", words: ["eiffel", "eifell", "effiel", "eiffeltornet", "eiffel tower"] }
+    ];
+
+    const state = {
+      entries: [],
+      loadingRemote: false,
+      sharedApiAvailable: true,
+      batch: { running: false, start: 0, total: 0, done: 0 }
+    };
+    const CROP_VERSION = 2;
+
+    const el = {
+      fileInput: document.getElementById("fileInput"),
+      dropZone: document.getElementById("dropZone"),
+      judgeBtn: document.getElementById("judgeBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      exportWorkspaceBtn: document.getElementById("exportWorkspaceBtn"),
+      importWorkspaceBtn: document.getElementById("importWorkspaceBtn"),
+      workspaceInput: document.getElementById("workspaceInput"),
+      clearBtn: document.getElementById("clearBtn"),
+      themeBtn: document.getElementById("themeBtn"),
+      cards: document.getElementById("cards"),
+      empty: document.getElementById("empty"),
+      leaderboard: document.getElementById("leaderboard"),
+      countStat: document.getElementById("countStat"),
+      judgedStat: document.getElementById("judgedStat"),
+      avgStat: document.getElementById("avgStat"),
+      topStat: document.getElementById("topStat"),
+      batchTimer: document.getElementById("batchTimer"),
+      timerProgress: document.getElementById("timerProgress"),
+      timerElapsed: document.getElementById("timerElapsed"),
+      timerRemaining: document.getElementById("timerRemaining"),
+      timerFinish: document.getElementById("timerFinish"),
+      toast: document.getElementById("toast"),
+      reviewModal: document.getElementById("reviewModal"),
+      reviewImage: document.getElementById("reviewImage"),
+      reviewName: document.getElementById("reviewName"),
+      reviewMeta: document.getElementById("reviewMeta"),
+      reviewScore: document.getElementById("reviewScore"),
+      reviewNameInput: document.getElementById("reviewNameInput"),
+      reviewTimeInput: document.getElementById("reviewTimeInput"),
+      reviewPrompt: document.getElementById("reviewPrompt"),
+      reviewChecks: document.getElementById("reviewChecks"),
+      generatedPreviewBtn: document.getElementById("generatedPreviewBtn"),
+      fullScreenshotBtn: document.getElementById("fullScreenshotBtn"),
+      closeReviewBtn: document.getElementById("closeReviewBtn")
+    };
+
+    function showToast(text) {
+      el.toast.textContent = text;
+      el.toast.classList.add("visible");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => el.toast.classList.remove("visible"), 2400);
+    }
+
+    async function loadSharedEntries(silent = false) {
+      if (state.loadingRemote) return;
+      state.loadingRemote = true;
+      try {
+        const response = await fetch("/api/entries");
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not load shared entries");
+        state.entries = Array.isArray(payload.entries) ? payload.entries : [];
+        render();
+        if (!silent) showToast(`Loaded ${state.entries.length} shared entr${state.entries.length === 1 ? "y" : "ies"}.`);
+      } catch (error) {
+        state.sharedApiAvailable = false;
+        if (!silent) showToast(error.message || "Could not load shared workspace.");
+      } finally {
+        state.loadingRemote = false;
+      }
+    }
+
+    async function createSharedEntries(entries) {
+      if (!state.sharedApiAvailable) {
+        state.entries.push(...entries);
+        render();
+        return;
+      }
+      try {
+        const response = await fetch("/api/entries", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ entries })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "Could not save screenshots");
+        state.entries = Array.isArray(payload.entries) ? payload.entries : state.entries;
+      } catch (error) {
+        state.sharedApiAvailable = false;
+        state.entries.push(...entries);
+        showToast("Running in local file mode. Use Export workspace to share updates.");
+      }
+      render();
+    }
+
+    async function saveEntry(entry, patch) {
+      if (!state.sharedApiAvailable) return entry;
+      const response = await fetch(`/api/entries/${encodeURIComponent(entry.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch)
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "Could not save entry");
+      return payload.entry;
+    }
+
+    function scheduleEntrySave(entry, patch) {
+      clearTimeout(scheduleEntrySave.timers?.[entry.id]);
+      scheduleEntrySave.timers ||= {};
+      scheduleEntrySave.timers[entry.id] = setTimeout(() => {
+        saveEntry(entry, patch).catch((error) => showToast(error.message || "Could not save change."));
+      }, 250);
+    }
+
+    function connectSharedEvents() {
+      if (!window.EventSource) {
+        setInterval(() => loadSharedEntries(true), 4000);
+        return;
+      }
+      const source = new EventSource("/api/events");
+      source.addEventListener("state", () => loadSharedEntries(true));
+      source.onerror = () => {
+        state.sharedApiAvailable = false;
+        source.close();
+      };
+    }
+
+    function makeEntry(file, imageData) {
+      const fallbackName = file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ").trim();
+      return {
+        id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+        fileName: file.name,
+        imageData,
+        generatedImageData: "",
+        cropVersion: 0,
+        user: fallbackName || "Participant",
+        submittedAt: "",
+        prompt: "",
+        ocrText: "",
+        visualHints: [],
+        evidence: {},
+        uncertain: [],
+        error: "",
+        status: "new",
+        judged: false,
+        disqualified: false,
+        disqualifiedReasons: [],
+        checks: Object.fromEntries(criteria.map((item) => [item.id, false]))
+      };
+    }
+
+    async function addFiles(files) {
+      const images = [...files].filter((file) => file.type.startsWith("image/"));
+      if (!images.length) {
+        showToast("No image files found.");
+        return;
+      }
+      const loaded = await Promise.all(images.map(readAsDataUrl));
+      const entries = loaded.map(({ file, dataUrl }) => makeEntry(file, dataUrl));
+      await createSharedEntries(entries);
+      showToast(`${images.length} screenshot(s) added.`);
+    }
+
+    function readAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ file, dataUrl: reader.result });
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function addClipboardImages(event) {
+      const items = [...(event.clipboardData?.items || [])];
+      const files = items.filter((item) => item.type.startsWith("image/")).map((item, index) => {
+        const file = item.getAsFile();
+        return new File([file], `paste-${Date.now()}-${index + 1}.png`, { type: file.type });
+      });
+      if (files.length) {
+        event.preventDefault();
+        await addFiles(files);
+      }
+    }
+
+    async function judgeAll() {
+      if (!state.entries.length) {
+        showToast("Add screenshots first.");
+        return;
+      }
+      el.judgeBtn.disabled = true;
+      state.batch = { running: true, start: Date.now(), total: state.entries.length, done: 0 };
+      renderBatchTimer();
+      clearInterval(judgeAll.timer);
+      judgeAll.timer = setInterval(renderBatchTimer, 1000);
+      await runQueue(state.entries, 3, async (entry, index, total) => {
+        showToast(`Judging ${index + 1}/${total}...`);
+        await judgeEntry(entry);
+        state.batch.done += 1;
+        renderBatchTimer();
+        render();
+      });
+      state.batch.running = false;
+      renderBatchTimer();
+      clearInterval(judgeAll.timer);
+      el.judgeBtn.disabled = false;
+      showToast("Judging complete.");
+    }
+
+    async function judgeEntry(entry) {
+      entry.status = "judging";
+      entry.error = "";
+      entry.uncertain = [];
+      entry.visualHints = [];
+      entry.judged = false;
+      entry.disqualified = false;
+      entry.disqualifiedReasons = [];
+      entry.checks = Object.fromEntries(criteria.map((item) => [item.id, false]));
+      try {
+        entry.status = "reading";
+        render();
+        await saveEntry(entry, entryPatch(entry));
+        await readScreenshotMetadata(entry);
+        if (!hasValidParticipantName(entry.user)) {
+          entry.status = "error";
+          entry.error = "Missing participant name. Open the submission, enter the participant name, then run judging again.";
+          await saveEntry(entry, entryPatch(entry));
+          return;
+        }
+        updateDisqualification(entry);
+        if (entry.disqualified) {
+          entry.judged = true;
+          entry.status = "done";
+          await saveEntry(entry, entryPatch(entry));
+          return;
+        }
+        entry.status = "judging";
+        render();
+        await saveEntry(entry, entryPatch(entry));
+        const apiResult = await judgeWithApi(entry);
+        applyApiResult(entry, apiResult);
+        await collectVisualReviewHints(entry);
+        entry.judged = true;
+        entry.status = "done";
+        await saveEntry(entry, entryPatch(entry));
+      } catch (error) {
+        entry.status = "error";
+        entry.error = error.message || "Judging failed";
+        await saveEntry(entry, entryPatch(entry)).catch(() => {});
+        showToast(entry.error);
+      }
+    }
+
+    async function runQueue(items, concurrency, worker) {
+      let cursor = 0;
+      const total = items.length;
+      const runners = Array.from({ length: Math.min(concurrency, total) }, async () => {
+        while (cursor < total) {
+          const index = cursor++;
+          await worker(items[index], index, total);
+        }
+      });
+      await Promise.all(runners);
+    }
+
+    async function judgeWithApi(entry) {
+      const entryImage = await resizeToJpeg(entry.imageData, 1600);
+      const response = await fetch("/api/judge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entryImage, name: entry.user, prompt: entry.prompt })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "API judging failed");
+      }
+      return payload;
+    }
+
+    async function ensureGeneratedPreview(entry, maxWidth = 2200) {
+      if (entry.generatedImageData && entry.cropVersion === CROP_VERSION) return entry.generatedImageData;
+      entry.generatedImageData = await cropGeneratedImageToJpeg(entry.imageData, maxWidth);
+      entry.cropVersion = CROP_VERSION;
+      render();
+      if (state.entries.some((item) => item.id === entry.id)) {
+        saveEntry(entry, { generatedImageData: entry.generatedImageData, cropVersion: entry.cropVersion }).catch(() => {});
+      }
+      return entry.generatedImageData;
+    }
+
+    async function readScreenshotMetadata(entry) {
+      let ocrParsed = {};
+      if (window.Tesseract?.recognize) {
+        try {
+          const result = await window.Tesseract.recognize(entry.imageData, "eng");
+          entry.ocrText = result?.data?.text || "";
+          ocrParsed = parseScreenshot(entry.ocrText);
+          if (ocrParsed.user) entry.user = ocrParsed.user;
+          if (ocrParsed.timestamp) entry.submittedAt = ocrParsed.timestamp;
+          if (ocrParsed.prompt) entry.prompt = ocrParsed.prompt;
+        } catch (error) {
+          entry.error = `OCR warning: ${error.message || "could not read prompt text"}`;
+        }
+      }
+
+      try {
+        const metadata = await readMetadataWithApi(entry);
+        if (metadata.name) entry.user = metadata.name;
+        if (metadata.timestamp) entry.submittedAt = metadata.timestamp;
+        if (metadata.prompt) entry.prompt = metadata.prompt;
+        if ((metadata.name || metadata.prompt) && entry.error.startsWith("OCR warning:")) entry.error = "";
+      } catch (error) {
+        if (!ocrParsed.user && isFallbackParticipantName(entry.user)) {
+          entry.error = `Name warning: ${error.message || "could not identify participant name"}`;
+        }
+      }
+    }
+
+    async function readMetadataWithApi(entry) {
+      const screenshotImage = await resizeToJpeg(entry.imageData, 1400);
+      const response = await fetch("/api/metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ screenshotImage })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || "Metadata read failed");
+      return payload;
+    }
+
+    function isFallbackParticipantName(value) {
+      return /^(participant|paste\b|skärmbild|screenshot|image\b)/i.test(String(value || "").trim());
+    }
+
+    function hasValidParticipantName(value) {
+      const name = String(value || "").trim();
+      if (!name || isFallbackParticipantName(name)) return false;
+      if (name.length < 3 || name.length > 80) return false;
+      if (!/\p{L}/u.test(name)) return false;
+      return true;
+    }
+
+    function cropGeneratedImageToJpeg(dataUrl, maxWidth) {
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => {
+          const sourceCanvas = document.createElement("canvas");
+          sourceCanvas.width = image.width;
+          sourceCanvas.height = image.height;
+          const source = sourceCanvas.getContext("2d", { willReadFrequently: true });
+          source.drawImage(image, 0, 0);
+          Promise.resolve()
+            .then(() => findGeneratedImageRectWithApi(dataUrl, image.width, image.height))
+            .catch(() => null)
+            .then((apiRect) => {
+              const rect = apiRect || findGeneratedImageRect(source, image.width, image.height);
+              const scale = Math.min(1, maxWidth / rect.width);
+              const canvas = document.createElement("canvas");
+              canvas.width = Math.max(1, Math.round(rect.width * scale));
+              canvas.height = Math.max(1, Math.round(rect.height * scale));
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(sourceCanvas, rect.x, rect.y, rect.width, rect.height, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL("image/jpeg", 0.9));
+            });
+        };
+        image.onerror = () => resolve(dataUrl);
+        image.src = dataUrl;
+      });
+    }
+
+    async function findGeneratedImageRectWithApi(dataUrl, width, height) {
+      const screenshotImage = await resizeToJpeg(dataUrl, 1400);
+      const response = await fetch("/api/crop-box", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ screenshotImage })
+      });
+      const box = await response.json().catch(() => ({}));
+      if (!response.ok || !box || box.confidence < 0.55) return null;
+      const rect = {
+        x: Math.round(box.x * width),
+        y: Math.round(box.y * height),
+        width: Math.round(box.width * width),
+        height: Math.round(box.height * height)
+      };
+      if (rect.width < width * 0.08 || rect.height < height * 0.08) return null;
+      if (rect.x < 0 || rect.y < 0 || rect.x + rect.width > width || rect.y + rect.height > height) return null;
+      return rect;
+    }
+
+    function findGeneratedImageRect(ctx, width, height) {
+      const pixels = ctx.getImageData(0, 0, width, height).data;
+      const promptTop = findPromptBandTop(pixels, width, height);
+      const maxY = promptTop
+        ? Math.max(Math.floor(height * 0.12), promptTop - Math.max(4, Math.round(height * 0.015)))
+        : Math.floor(height * 0.62);
+      const candidates = [];
+      const step = Math.max(2, Math.round(Math.min(width, height) / 180));
+      let minX = width;
+      let minY = height;
+      let maxX = 0;
+      let maxSeenY = 0;
+      for (let y = Math.floor(height * 0.06); y < maxY; y += step) {
+        let rowMinX = width;
+        let rowMaxX = 0;
+        for (let x = Math.floor(width * 0.06); x < Math.floor(width * 0.82); x += step) {
+          const i = (y * width + x) * 4;
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          const lum = (r + g + b) / 3;
+          const chroma = Math.max(r, g, b) - Math.min(r, g, b);
+          if (lum > 58 || chroma > 28) {
+            rowMinX = Math.min(rowMinX, x);
+            rowMaxX = Math.max(rowMaxX, x);
+          }
+        }
+        if (rowMaxX - rowMinX > width * 0.12) {
+          minX = Math.min(minX, rowMinX);
+          maxX = Math.max(maxX, rowMaxX);
+          minY = Math.min(minY, y);
+          maxSeenY = Math.max(maxSeenY, y);
+        }
+      }
+      if (maxX > minX && maxSeenY > minY) {
+        candidates.push({ x: minX, y: minY, width: maxX - minX, height: maxSeenY - minY });
+      }
+      const fallbackWidth = Math.round(width * 0.42);
+      const fallbackHeight = Math.max(1, maxY - Math.round(height * 0.10));
+      const best = candidates
+        .filter((rect) => rect.width > width * 0.18 && rect.height > height * 0.18)
+        .sort((a, b) => (b.width * b.height) - (a.width * a.height))[0] || {
+          x: Math.round(width * 0.08),
+          y: Math.round(height * 0.10),
+          width: fallbackWidth,
+          height: fallbackHeight
+        };
+      const pad = Math.round(Math.min(width, height) * 0.01);
+      return {
+        x: Math.max(0, best.x - pad),
+        y: Math.max(0, best.y - pad),
+        width: Math.min(width - Math.max(0, best.x - pad), best.width + pad * 2),
+        height: Math.min(height - Math.max(0, best.y - pad), best.height + pad * 2)
+      };
+    }
+
+    function findPromptBandTop(pixels, width, height) {
+      for (let y = Math.floor(height * 0.18); y < height; y++) {
+        let light = 0;
+        let pinkOrWhite = 0;
+        let sampled = 0;
+        for (let x = Math.floor(width * 0.05); x < Math.floor(width * 0.98); x += 3) {
+          const i = (y * width + x) * 4;
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          const lum = (r + g + b) / 3;
+          sampled++;
+          if (lum > 145 && r >= g - 8 && r >= b - 8) light++;
+          if (lum > 105 && r > b + 10 && r >= g - 18) pinkOrWhite++;
+        }
+        if (sampled && (light / sampled > 0.28 || pinkOrWhite / sampled > 0.34)) return y;
+      }
+      return 0;
+    }
+
+    function applyApiResult(entry, result) {
+      entry.user = result.name || entry.user;
+      entry.prompt = result.prompt || entry.prompt || "";
+      updateDisqualification(entry);
+      entry.disqualified = entry.disqualified || Boolean(result.disqualified);
+      entry.disqualifiedReasons = entry.disqualifiedReasons.length
+        ? entry.disqualifiedReasons
+        : Array.isArray(result.dqReasons) ? result.dqReasons : [];
+      entry.uncertain = Array.isArray(result.uncertain) ? result.uncertain : [];
+      entry.evidence = result.evidence || {};
+      criteria.forEach((item) => {
+        entry.checks[item.id] = entry.disqualified ? false : Boolean(result.criteria?.[item.id]);
+      });
+    }
+
+    function resizeToJpeg(dataUrl, maxWidth) {
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => {
+          const scale = Math.min(1, maxWidth / image.width);
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.width * scale));
+          canvas.height = Math.max(1, Math.round(image.height * scale));
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/jpeg", 0.86));
+        };
+        image.onerror = () => resolve(dataUrl);
+        image.src = dataUrl;
+      });
+    }
+
+    function parseScreenshot(text) {
+      const cleaned = String(text || "")
+        .replace(/\r/g, "\n")
+        .replace(/[ \t]+/g, " ")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim();
+      const lines = cleaned.split("\n").map((line) => line.trim()).filter(Boolean);
+      const promptMatch = cleaned.match(/\b(pr[o0]mpt|promt|prompten)\s*[:：]\s*/i);
+      const imageRegex = /\b(i[mn]age|img|bild)\s*[:：]/i;
+      const imageMatch = cleaned.match(imageRegex);
+      let prompt = "";
+      if (promptMatch) {
+        prompt = cleaned.slice(
+          promptMatch.index + promptMatch[0].length,
+          imageMatch && imageMatch.index > promptMatch.index ? imageMatch.index : undefined
+        );
+      } else {
+        const createMatch = cleaned.match(/\b(create|generate|make|skapa)\b[\s\S]{20,}/i);
+        if (createMatch) {
+          prompt = cleaned.slice(createMatch.index, imageMatch && imageMatch.index > createMatch.index ? imageMatch.index : undefined);
+        }
+      }
+      prompt = prompt.replace(/\n+/g, " ").replace(/\s+/g, " ").trim();
+      const promptLineIndex = lines.findIndex((line) => /\b(pr[o0]mpt|promt|prompten)\s*[:：]/i.test(line));
+      const { user, timestamp } = findUserAndTimestamp(lines, promptLineIndex, cleaned);
+      return { user, timestamp, prompt, imageFound: Boolean(imageMatch) };
+    }
+
+    function findUserAndTimestamp(lines, promptLineIndex, text) {
+      const namedBeforeTime = text.match(/\b([A-ZÅÄÖ][a-zåäöéÅÄÖ-]+(?:\s+[A-ZÅÄÖ][a-zåäöéÅÄÖ-]+){1,2})\s+\d{1,2}[:.]\d{2}\b/);
+      if (namedBeforeTime) return { user: cleanParticipantName(namedBeforeTime[1]), timestamp: normalizeTimestamp(namedBeforeTime[0]) };
+
+      const max = promptLineIndex >= 0 ? promptLineIndex : lines.length;
+      for (let i = max - 1; i >= 0; i--) {
+        const time = extractTimestamp(lines[i]);
+        const line = cleanParticipantName(lines[i]);
+        if (!line || line.length > 70) continue;
+        if (/^(prompt|image|img|bild|teams|microsoft teams|reply|svara)$/i.test(line)) continue;
+        if (/\b(pr[o0]mpt|image|img|bild)\s*[:：]/i.test(line)) continue;
+        if (!/[A-ZÅÄÖ][a-zåäöéÅÄÖ-]+\s+[A-ZÅÄÖ][a-zåäöéÅÄÖ-]+/.test(line)) continue;
+        return { user: line, timestamp: time };
+      }
+      return { user: "", timestamp: extractTimestamp(text) };
+    }
+
+    function extractTimestamp(value) {
+      const match = String(value || "").match(/\b(?:\d{4}[-/]\d{1,2}[-/]\d{1,2}\s+)?\d{1,2}[:.]\d{2}\b/);
+      return match ? normalizeTimestamp(match[0]) : "";
+    }
+
+    function normalizeTimestamp(value) {
+      const match = String(value || "").match(/\b(?:\d{4}[-/]\d{1,2}[-/]\d{1,2}\s+)?\d{1,2}[:.]\d{2}\b/);
+      return match ? match[0].replace(".", ":") : "";
+    }
+
+    function cleanParticipantName(value) {
+      return String(value || "")
+        .replace(/\d{1,2}[:.]\d{2}.*/, " ")
+        .replace(/(^|\s)(översätt|oversatt|translate|pool|edited|redigerad|reply|svara)(?=\s|$)/ig, " ")
+        .replace(/[^\p{L}\s'-]/gu, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function collectVisualReviewHints(entry) {
+      return new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxWidth = 420;
+          const scale = Math.min(1, maxWidth / image.width);
+          canvas.width = Math.max(1, Math.round(image.width * scale));
+          canvas.height = Math.max(1, Math.round(image.height * scale));
+          const ctx = canvas.getContext("2d", { willReadFrequently: true });
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+          const hints = [];
+
+          if (hasBlueSportscarCandidate(pixels, canvas.width, canvas.height)) {
+            hints.push("Review possible sports car");
+          }
+          if (hasCentralTowerCandidate(pixels, canvas.width, canvas.height)) {
+            hints.push("Review possible Eiffel Tower");
+          }
+
+          entry.visualHints = hints;
+          resolve(entry);
+        };
+        image.onerror = () => resolve(entry);
+        image.src = entry.imageData;
+      });
+    }
+
+    function hasBlueSportscarCandidate(pixels, width, height) {
+      let blue = 0;
+      let strongBlue = 0;
+      let samples = 0;
+      const startX = Math.floor(width * 0.50);
+      const startY = Math.floor(height * 0.48);
+      for (let y = startY; y < height; y += 2) {
+        for (let x = startX; x < width; x += 2) {
+          const i = (y * width + x) * 4;
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          samples++;
+          if (b > 75 && b > r + 24 && b > g + 8) blue++;
+          if (b > 105 && b > r + 38 && b > g + 18) strongBlue++;
+        }
+      }
+      const blueRatio = samples ? blue / samples : 0;
+      const strongRatio = samples ? strongBlue / samples : 0;
+      return blueRatio > 0.012 || strongRatio > 0.004;
+    }
+
+    function hasCentralTowerCandidate(pixels, width, height) {
+      let darkCentral = 0;
+      let darkNearTop = 0;
+      let samples = 0;
+      const startX = Math.floor(width * 0.38);
+      const endX = Math.floor(width * 0.62);
+      const startY = Math.floor(height * 0.04);
+      const endY = Math.floor(height * 0.72);
+      for (let y = startY; y < endY; y += 3) {
+        for (let x = startX; x < endX; x += 3) {
+          const i = (y * width + x) * 4;
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          const lum = (r + g + b) / 3;
+          samples++;
+          if (lum < 118 && Math.abs(r - g) < 55 && Math.abs(g - b) < 65) {
+            darkCentral++;
+            if (y < height * 0.28) darkNearTop++;
+          }
+        }
+      }
+      return samples ? darkCentral / samples > 0.08 && darkNearTop > 12 : false;
+    }
+
+    function updateDisqualification(entry) {
+      const promptText = normalizeForMatch(entry.prompt);
+      entry.disqualifiedReasons = disqualifyingPromptTerms
+        .filter((term) => term.words.some((word) => promptText.includes(normalizeForMatch(word))))
+        .map((term) => term.label);
+      entry.disqualified = entry.disqualifiedReasons.length > 0;
+    }
+
+    function normalizeForMatch(value) {
+      return String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function score(entry) {
+      if (entry.disqualified) return 0;
+      return criteria.reduce((sum, item) => sum + (entry.checks[item.id] ? 1 : 0), 0);
+    }
+
+    function render() {
+      renderCards();
+      renderLeaderboard();
+      renderStats();
+    }
+
+    function renderCards() {
+      el.cards.innerHTML = "";
+      el.empty.style.display = state.entries.length ? "none" : "grid";
+      state.entries.forEach((entry, index) => {
+        const card = document.createElement("article");
+        card.className = "card panel";
+        card.dataset.cardId = entry.id;
+        card.innerHTML = `
+          <button class="image-button" data-open="${entry.id}" title="Open and review image">
+            <img src="${entry.imageData}" alt="${escapeHtml(entry.user)}" />
+          </button>
+          <div class="card-body">
+            <div class="topline">
+              <div>
+                <h3>${escapeHtml(entry.user)}</h3>
+                <p class="muted small">${statusLabel(entry)} · ${escapeHtml(entry.submittedAt || "time not captured")} · ${escapeHtml(entry.fileName)}</p>
+              </div>
+              <div class="score">${entry.disqualified ? "DQ" : score(entry)}</div>
+            </div>
+            ${entry.disqualified ? `<p class="small" style="color: var(--cp-danger);"><strong>Disqualified:</strong> prompt mentions ${escapeHtml(entry.disqualifiedReasons.join(", "))}</p>` : ""}
+            ${entry.error ? `<p class="small" style="color: var(--cp-danger);"><strong>Error:</strong> ${escapeHtml(entry.error)}</p>` : ""}
+            ${entry.uncertain?.length ? `<p class="small" style="color: var(--cp-warning);"><strong>Uncertain:</strong> ${escapeHtml(entry.uncertain.join(", "))}</p>` : ""}
+            ${entry.visualHints?.length ? `<p class="small" style="color: var(--cp-warning);"><strong>Review hints:</strong> ${escapeHtml(entry.visualHints.join(", "))}</p>` : ""}
+            ${entry.judged && !entry.checks.sportscar ? `<p class="small" style="color: var(--cp-warning);"><strong>Review:</strong> sports car was not marked automatically. Open the image and tick it if visible.</p>` : ""}
+            <div class="prompt small">${escapeHtml(entry.prompt || "Prompt appears here after analysis.")}</div>
+            <div class="checks">
+              ${criteria.map((item) => `
+                <label class="check">
+                  <input type="checkbox" data-entry="${entry.id}" data-check="${item.id}" ${entry.checks[item.id] ? "checked" : ""} />
+                  ${escapeHtml(item.label)} <span class="muted">(+1)</span>
+                </label>
+              `).join("")}
+            </div>
+          </div>
+        `;
+        el.cards.appendChild(card);
+      });
+    }
+
+    function renderLeaderboard() {
+      const sorted = [...state.entries].sort((a, b) => Number(a.disqualified) - Number(b.disqualified) || score(b) - score(a));
+      el.leaderboard.innerHTML = sorted.length ? "" : `<p class="muted">The leaderboard appears after you add screenshots.</p>`;
+      sorted.forEach((entry, index) => {
+        const row = document.createElement("div");
+        row.className = "leader-row";
+        row.dataset.jumpTo = entry.id;
+        row.tabIndex = 0;
+        row.setAttribute("role", "button");
+        row.setAttribute("aria-label", `Go to ${entry.user}'s screenshot in the feed`);
+        row.innerHTML = `
+          <div class="rank">#${index + 1}</div>
+          <div>
+            <strong>${escapeHtml(entry.user)}</strong>
+             <p class="muted small">${checkedLabels(entry).join(", ") || "No points yet"}</p>
+             <p class="muted small">${escapeHtml(entry.submittedAt || "time not captured")}</p>
+           </div>
+           <strong>${entry.disqualified ? "DQ" : `${score(entry)} pts`}</strong>
+        `;
+        el.leaderboard.appendChild(row);
+      });
+    }
+
+    function statusLabel(entry) {
+      if (entry.status === "reading") return "Identifying name and prompt rules...";
+      if (entry.status === "judging") return "Judging + visual audit...";
+      if (entry.status === "error") return "Error - run again";
+      if (entry.disqualified) return "DQ";
+      if (entry.judged) return "Judged - click image to review";
+      return "Not judged";
+    }
+
+    function renderStats() {
+      const judged = state.entries.filter((entry) => entry.judged);
+      const total = judged.reduce((sum, entry) => sum + score(entry), 0);
+      const top = [...state.entries].sort((a, b) => Number(a.disqualified) - Number(b.disqualified) || score(b) - score(a))[0];
+      el.countStat.textContent = state.entries.length;
+      el.judgedStat.textContent = judged.length;
+      el.avgStat.textContent = judged.length ? Math.round((total / judged.length) * 10) / 10 : 0;
+      el.topStat.textContent = top ? top.user.slice(0, 18) : "-";
+    }
+
+    function checkedLabels(entry) {
+      if (entry.disqualified) return [`Disqualified: ${entry.disqualifiedReasons.join(", ")}`];
+      return criteria.filter((item) => entry.checks[item.id]).map((item) => item.label);
+    }
+
+    function renderBatchTimer() {
+      const batch = state.batch;
+      el.batchTimer.classList.toggle("active", batch.running || batch.done > 0);
+      el.timerProgress.textContent = `${batch.done}/${batch.total}`;
+      const elapsedMs = batch.start ? Date.now() - batch.start : 0;
+      el.timerElapsed.textContent = formatDuration(elapsedMs);
+      if (batch.done > 0 && batch.done < batch.total) {
+        const rate = batch.done / Math.max(1, elapsedMs);
+        const remainingMs = (batch.total - batch.done) / rate;
+        el.timerRemaining.textContent = formatDuration(remainingMs);
+        el.timerFinish.textContent = new Date(Date.now() + remainingMs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      } else if (batch.done >= batch.total && batch.total > 0) {
+        el.timerRemaining.textContent = "00:00";
+        el.timerFinish.textContent = "Done";
+      } else {
+        el.timerRemaining.textContent = "--:--";
+        el.timerFinish.textContent = "--:--";
+      }
+    }
+
+    function formatDuration(ms) {
+      const totalSeconds = Math.max(0, Math.round(ms / 1000));
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+    }
+
+    function entryPatch(entry) {
+      return {
+        generatedImageData: entry.generatedImageData,
+        cropVersion: entry.cropVersion,
+        user: entry.user,
+        submittedAt: entry.submittedAt,
+        prompt: entry.prompt,
+        ocrText: entry.ocrText,
+        visualHints: entry.visualHints,
+        evidence: entry.evidence,
+        uncertain: entry.uncertain,
+        error: entry.error,
+        status: entry.status,
+        judged: entry.judged,
+        disqualified: entry.disqualified,
+        disqualifiedReasons: entry.disqualifiedReasons,
+        checks: entry.checks,
+      };
+    }
+
+    function jumpToEntry(entryId) {
+      const card = el.cards.querySelector(`[data-card-id="${entryId}"]`);
+      if (!card) return;
+      el.cards.querySelectorAll(".card.focused").forEach((item) => item.classList.remove("focused"));
+      card.classList.add("focused");
+      card.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      clearTimeout(jumpToEntry.timer);
+      jumpToEntry.timer = setTimeout(() => card.classList.remove("focused"), 2200);
+    }
+
+    function openReview(entryId) {
+      const entry = state.entries.find((item) => item.id === entryId);
+      if (!entry) return;
+      el.reviewModal.dataset.entry = entry.id;
+      el.reviewModal.dataset.preview = "full";
+      renderReview(entry);
+      el.reviewModal.classList.add("open");
+    }
+
+    function closeReview() {
+      el.reviewModal.classList.remove("open");
+      delete el.reviewModal.dataset.entry;
+    }
+
+    function renderReview(entry) {
+      const mode = el.reviewModal.dataset.preview || "full";
+      el.reviewImage.src = mode === "full" ? entry.imageData : (entry.generatedImageData || entry.imageData);
+      el.reviewImage.alt = mode === "full" ? "Full Teams screenshot" : "Generated image preview";
+      el.fullScreenshotBtn.classList.toggle("active", mode === "full");
+      el.generatedPreviewBtn.classList.toggle("active", mode !== "full");
+      el.reviewName.textContent = entry.user;
+      el.reviewNameInput.value = entry.user;
+      el.reviewTimeInput.value = entry.submittedAt || "";
+      el.reviewMeta.textContent = `${entry.judged ? "Judged" : "Not judged"} · ${entry.submittedAt || "time not captured"} · ${entry.fileName}`;
+      el.reviewScore.textContent = entry.disqualified ? "DQ" : score(entry);
+      el.reviewPrompt.textContent = [
+        entry.error ? `Error: ${entry.error}` : "",
+        entry.uncertain?.length ? `Uncertain criteria: ${entry.uncertain.join(", ")}` : "",
+        entry.prompt || "Prompt appears here after analysis."
+      ].filter(Boolean).join("\n\n");
+      el.reviewChecks.innerHTML = criteria.map((item) => `
+        <label class="check">
+          <input type="checkbox" data-entry="${entry.id}" data-check="${item.id}" ${entry.checks[item.id] ? "checked" : ""} />
+          ${escapeHtml(item.label)} <span class="muted">(+1)</span>${entry.uncertain?.includes(item.id) ? ` <span style="color: var(--cp-warning);">uncertain</span>` : ""}
+        </label>
+      `).join("");
+    }
+
+    function exportCsv() {
+      const rows = [
+        ["rank", "participant", "submission_time", "score", "status", "prompt", "criteria"],
+        ...[...state.entries].sort((a, b) => Number(a.disqualified) - Number(b.disqualified) || score(b) - score(a)).map((entry, index) => [
+          index + 1,
+          entry.user,
+          entry.submittedAt,
+          score(entry),
+          entry.disqualified ? `DQ: ${entry.disqualifiedReasons.join("; ")}` : "OK",
+          entry.prompt,
+          checkedLabels(entry).join("; ")
+        ])
+      ];
+      const csv = rows.map((row) => row.map((value) => `"${String(value ?? "").replaceAll('"', '""')}"`).join(",")).join("\n");
+      download("promptathon-results.csv", csv, "text/csv");
+    }
+
+    function exportWorkspace() {
+      const payload = {
+        app: "Promptathon Judge",
+        format: "promptathon-workspace-v1",
+        exportedAt: new Date().toISOString(),
+        model: "GPT-5.4-mini",
+        entries: state.entries
+      };
+      download(`promptathon-workspace-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2), "application/json");
+    }
+
+    async function importWorkspaceFile(file) {
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const payload = JSON.parse(text);
+        const entries = Array.isArray(payload.entries) ? payload.entries : Array.isArray(payload) ? payload : [];
+        if (!entries.length) throw new Error("No entries found in workspace file.");
+        const normalized = entries.map((entry) => ({
+          ...entry,
+          id: entry.id || crypto.randomUUID(),
+          checks: Object.fromEntries(criteria.map((item) => [item.id, Boolean(entry.checks?.[item.id])]))
+        }));
+        await createSharedEntries(normalized);
+        showToast(`Imported ${normalized.length} workspace entr${normalized.length === 1 ? "y" : "ies"}.`);
+      } catch (error) {
+        showToast(error.message || "Could not import workspace.");
+      } finally {
+        el.workspaceInput.value = "";
+      }
+    }
+
+    function download(fileName, content, type) {
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    el.fileInput.addEventListener("change", (event) => addFiles(event.target.files));
+    el.dropZone.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      el.dropZone.classList.add("dragover");
+    });
+    el.dropZone.addEventListener("dragleave", () => el.dropZone.classList.remove("dragover"));
+    el.dropZone.addEventListener("drop", (event) => {
+      event.preventDefault();
+      el.dropZone.classList.remove("dragover");
+      addFiles(event.dataTransfer.files);
+    });
+    document.addEventListener("paste", addClipboardImages);
+    el.judgeBtn.addEventListener("click", judgeAll);
+    el.exportBtn.addEventListener("click", exportCsv);
+    el.exportWorkspaceBtn.addEventListener("click", exportWorkspace);
+    el.importWorkspaceBtn.addEventListener("click", () => el.workspaceInput.click());
+    el.workspaceInput.addEventListener("change", (event) => importWorkspaceFile(event.target.files?.[0]));
+    el.clearBtn.addEventListener("click", async () => {
+      if (state.sharedApiAvailable) {
+        try {
+          const response = await fetch("/api/entries", { method: "DELETE" });
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.error || "Could not clear shared workspace.");
+        } catch (error) {
+          state.sharedApiAvailable = false;
+          showToast("Cleared locally. Shared server is not available.");
+        }
+      }
+      state.entries = [];
+      render();
+    });
+    el.themeBtn.addEventListener("click", () => {
+      const current = document.documentElement.getAttribute("data-theme");
+      document.documentElement.setAttribute("data-theme", current === "dark" ? "light" : "dark");
+    });
+    el.cards.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-open]");
+      if (!button) return;
+      openReview(button.dataset.open);
+    });
+    el.cards.addEventListener("change", (event) => {
+      const checkbox = event.target.closest("input[type='checkbox']");
+      if (!checkbox) return;
+      const entry = state.entries.find((item) => item.id === checkbox.dataset.entry);
+      if (!entry) return;
+      entry.checks[checkbox.dataset.check] = checkbox.checked;
+      render();
+      scheduleEntrySave(entry, { checks: entry.checks });
+    });
+    el.leaderboard.addEventListener("click", (event) => {
+      const row = event.target.closest("[data-jump-to]");
+      if (!row) return;
+      jumpToEntry(row.dataset.jumpTo);
+    });
+    el.leaderboard.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      const row = event.target.closest("[data-jump-to]");
+      if (!row) return;
+      event.preventDefault();
+      jumpToEntry(row.dataset.jumpTo);
+    });
+    el.reviewChecks.addEventListener("change", (event) => {
+      const checkbox = event.target.closest("input[type='checkbox']");
+      if (!checkbox) return;
+      const entry = state.entries.find((item) => item.id === checkbox.dataset.entry);
+      if (!entry) return;
+      entry.checks[checkbox.dataset.check] = checkbox.checked;
+      render();
+      scheduleEntrySave(entry, { checks: entry.checks });
+      renderReview(entry);
+    });
+    el.generatedPreviewBtn.addEventListener("click", () => {
+      const entry = state.entries.find((item) => item.id === el.reviewModal.dataset.entry);
+      if (!entry) return;
+      el.reviewModal.dataset.preview = "generated";
+      renderReview(entry);
+      ensureGeneratedPreview(entry).then(() => {
+        if (el.reviewModal.dataset.entry === entry.id) renderReview(entry);
+      });
+    });
+    el.fullScreenshotBtn.addEventListener("click", () => {
+      const entry = state.entries.find((item) => item.id === el.reviewModal.dataset.entry);
+      if (!entry) return;
+      el.reviewModal.dataset.preview = "full";
+      renderReview(entry);
+    });
+    el.reviewNameInput.addEventListener("input", () => {
+      const entry = state.entries.find((item) => item.id === el.reviewModal.dataset.entry);
+      if (!entry) return;
+      entry.user = el.reviewNameInput.value.trim() || "Participant";
+      el.reviewName.textContent = entry.user;
+      render();
+      scheduleEntrySave(entry, { user: entry.user });
+    });
+    el.reviewTimeInput.addEventListener("input", () => {
+      const entry = state.entries.find((item) => item.id === el.reviewModal.dataset.entry);
+      if (!entry) return;
+      entry.submittedAt = el.reviewTimeInput.value.trim();
+      el.reviewMeta.textContent = `${entry.judged ? "Judged" : "Not judged"} · ${entry.submittedAt || "time not captured"} · ${entry.fileName}`;
+      render();
+      scheduleEntrySave(entry, { submittedAt: entry.submittedAt });
+    });
+    el.closeReviewBtn.addEventListener("click", closeReview);
+    el.reviewModal.addEventListener("click", (event) => {
+      if (event.target === el.reviewModal) closeReview();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeReview();
+    });
+
+    render();
+    loadSharedEntries(true);
+    connectSharedEvents();
+  </script>
+</body>
+</html>
