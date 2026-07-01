@@ -1835,13 +1835,33 @@
           id: entry.id || crypto.randomUUID(),
           checks: Object.fromEntries(criteria.map((item) => [item.id, Boolean(entry.checks?.[item.id])]))
         }));
-        await createSharedEntries(normalized);
-        showToast(`Imported ${normalized.length} workspace entr${normalized.length === 1 ? "y" : "ies"}.`);
+        const result = await mergeWorkspaceEntries(normalized);
+        showToast(`Merged workspace: ${result.updated} updated, ${result.added} added.`);
       } catch (error) {
         showToast(error.message || "Could not import workspace.");
       } finally {
         el.workspaceInput.value = "";
       }
+    }
+
+    async function mergeWorkspaceEntries(entries) {
+      const incomingById = new Map(entries.map((entry) => [entry.id, entry]));
+      let updated = 0;
+      const addedEntries = [];
+
+      for (const current of state.entries) {
+        const incoming = incomingById.get(current.id);
+        if (!incoming) continue;
+        Object.assign(current, incoming);
+        updated++;
+        incomingById.delete(current.id);
+        await saveEntry(current, incoming).catch(() => {});
+      }
+
+      for (const entry of incomingById.values()) addedEntries.push(entry);
+      if (addedEntries.length) await createSharedEntries(addedEntries);
+      render();
+      return { updated, added: addedEntries.length };
     }
 
     function download(fileName, content, type) {
